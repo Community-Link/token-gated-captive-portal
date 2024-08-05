@@ -1,6 +1,6 @@
 "use client"
 import { ExitIcon } from "@radix-ui/react-icons"
-import { usePrivy } from "@privy-io/react-auth"
+import { usePrivy, useWallets } from "@privy-io/react-auth"
 import { useRouter } from "next/navigation"
 
 import { 
@@ -21,7 +21,9 @@ export function Logout () {
     
     const { logout } = usePrivy()
     const router = useRouter()
+    const {wallets} = useWallets();
 
+    const wallet = wallets[0];
     
     return(
         <AlertDialog>
@@ -44,6 +46,7 @@ export function Logout () {
                 <AlertDialogAction asChild>
                     <Button
                         onClick={async ()=>{
+                            wallet.disconnect()
                             await logout()
                             router.push("/")
                         }}

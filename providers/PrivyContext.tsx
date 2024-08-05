@@ -4,7 +4,6 @@
 import { PrivyProvider } from "@privy-io/react-auth"
 import { useRouter } from "next/navigation"
 import type { ReactNode } from "react"
-import { base } from "viem/chains"
 
 
 type Props = {
@@ -29,14 +28,10 @@ export function PrivyContext ({ children }: Props) {
                         logo: "",
                         showWalletLoginFirst: true,
                         walletList: ["metamask", "rainbow", "wallet_connect"], 
-
                     },
-                    defaultChain: base,
-                    supportedChains: [base],
                     embeddedWallets: {
-                        createOnLogin: "all-users",
-                        noPromptOnSignature: true
-                    }   
+                        createOnLogin: 'users-without-wallets', 
+                    }
                 }}
             >
                 {children}

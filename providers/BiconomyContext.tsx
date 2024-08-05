@@ -5,7 +5,7 @@ import { BiconomySmartAccountV2, createSmartAccountClient } from "@biconomy/acco
 import type { ReactNode } from "react"
 import React, { useContext, useEffect, useState } from "react"
 import { WalletClient } from "viem"
-import { base } from "viem/chains"
+import { optimism } from "viem/chains"
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { createWalletClient, custom } from "viem";
 
@@ -34,11 +34,12 @@ export function BiconomyContext ({ children }: Props) {
     const {wallets} = useWallets();
     const {ready, authenticated} = usePrivy();
 
+    let embeddedWallet = wallets[0]
+
     const getWalletClient = async () => {
         
-        const embeddedWallet = wallets.find((wallet) => (wallet.walletClientType === "privy"));
         // Switch your wallet to your target chain before getting the viem WalletClient
-        await embeddedWallet?.switchChain(base.id)
+        await embeddedWallet?.switchChain(optimism.id)
 
         // Get an EIP1193 provider from the user"s wallet
         const ethereumProvider = await embeddedWallet?.getEthereumProvider()
@@ -46,7 +47,7 @@ export function BiconomyContext ({ children }: Props) {
         // Create a Viem wallet client from the EIP1193 provider
         const walletClient = createWalletClient({
             account: embeddedWallet?.address as `0x${string}`,
-            chain: base,
+            chain: optimism,
             transport: custom(ethereumProvider!)
         })
         return walletClient as WalletClient;
@@ -77,7 +78,7 @@ export function BiconomyContext ({ children }: Props) {
         if (!ready || !authenticated) return;
 
         //find privy signer & create/login smart account
-        const embeddedWallet = wallets.find((wallet) => (wallet.walletClientType === "privy"));
+        //const embeddedWallet = wallets[0]
         if (!embeddedWallet) return; 
         const walletClient = await getWalletClient()
         if (embeddedWallet && !smartAccount) createSmartAccount(walletClient);
