@@ -1,18 +1,23 @@
 "use client"
 
 import { useBiconomy } from "@/providers/BiconomyContext";
+import { PublicLockV13 } from "@unlock-protocol/contracts"
 import { Network, Alchemy, OwnedNft } from "alchemy-sdk";
 import { useEffect, useState } from "react";
 import { MemberNotFound } from "./notFound";
-import { useBlockNumber } from "wagmi";
+import { useBlockNumber, useReadContract } from "wagmi";
 import { MemberActive } from "./active";
+import { MemberExpired } from "./expired";
+import { useQueryClient } from "@tanstack/react-query";
+
 
 
 export function MemberContext() {
     const { smartAccountAddress } = useBiconomy()
+    const queryClient = useQueryClient() 
     const { data: blockNumber } = useBlockNumber({ watch: true }) 
 
-    const [ownedPortalKey, setOwnedPortalKey] = useState<OwnedNft[]| undefined>()
+    const [ownedPortalKey, setOwnedPortalKey] = useState<OwnedNft | undefined | null >()
     
     
     const settings = {
@@ -28,7 +33,11 @@ export function MemberContext() {
             const data = await alchemy.nft.getNftsForOwner(smartAccountAddress, {
                 contractAddresses: ["0x7e0cc161Cd22876004010b1DA831c855e75EbeB4"]
             })
-            setOwnedPortalKey(data.ownedNfts) 
+            if (data.ownedNfts.length >= 1) {
+                setOwnedPortalKey(data.ownedNfts[0]) 
+            } else {
+                setOwnedPortalKey(null)
+            }
         }
     }
     useEffect(()=>{
@@ -36,25 +45,38 @@ export function MemberContext() {
     },[smartAccountAddress, blockNumber])
     console.log(ownedPortalKey)
 
+    const {data: hasValidaKey, queryKey} = useReadContract({
+        abi: PublicLockV13.abi,
+        address: '0x7e0cc161Cd22876004010b1DA831c855e75EbeB4',
+        functionName: 'getHasValidKey',
+        args: [(smartAccountAddress)]
+    })
+    
+    useEffect(() => { 
+        queryClient.invalidateQueries({ queryKey }) 
+    }, [blockNumber, queryClient, queryKey]) 
+    console.log(hasValidaKey)
    
 
     return (
         <div>
             {
-                !ownedPortalKey
+                ownedPortalKey === undefined
                 ? <p>loading...</p>
                 : (
                     <>
                         {
-                            ownedPortalKey.length == 0
+                            ownedPortalKey === null
                             //not member ie no nft
                             ? <><MemberNotFound/></>
                             : (
                                 <>
                                     {
+                                        hasValidaKey
                                         //memder expires xXdate
-                                        <MemberActive/>
+                                        ?<><MemberActive tokenId={ownedPortalKey?.tokenId}/></>
                                         //expired member please renew
+                                        :<><MemberExpired tokenId={ownedPortalKey?.tokenId}/></>
                                     }
                                 </>
                             )

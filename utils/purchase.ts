@@ -1,4 +1,4 @@
-import { encodeFunctionData, erc20Abi } from "viem"
+import { encodeFunctionData } from "viem"
 import { PublicLockV13 } from "@unlock-protocol/contracts"
 
 

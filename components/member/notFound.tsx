@@ -23,7 +23,7 @@ export function MemberNotFound() {
     }
     return (
         <div className="flex flex-col justify-center w-full gap-5">
-            <p>You do not have Portal Key, click below to get Internet Access for 24hrs</p>
+            <p>You do not have a Portal Key, click below to get Internet Access for 24hrs</p>
             <div className="flex w-full justify-center">
                 <Button onClick={enterPortal}>Enter Portal</Button>
             </div>
