@@ -34,7 +34,7 @@ export function BiconomyContext ({ children }: Props) {
     const {wallets} = useWallets();
     const {ready, authenticated} = usePrivy();
 
-    let embeddedWallet = wallets[0]
+    let embeddedWallet = wallets.find((wallet) => (wallet.walletClientType === "privy"));
 
     const getWalletClient = async () => {
         
@@ -78,7 +78,6 @@ export function BiconomyContext ({ children }: Props) {
         if (!ready || !authenticated) return;
 
         //find privy signer & create/login smart account
-        //const embeddedWallet = wallets[0]
         if (!embeddedWallet) return; 
         const walletClient = await getWalletClient()
         if (embeddedWallet && !smartAccount) createSmartAccount(walletClient);
