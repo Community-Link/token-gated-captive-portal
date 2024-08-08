@@ -46,8 +46,8 @@ export function Logout () {
                 <AlertDialogAction asChild>
                     <Button
                         onClick={async ()=>{
+                            
                             router.push("/")
-                            wallet.disconnect()
                             await logout()
                         }}
                         className="gap-2"
