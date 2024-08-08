@@ -62,7 +62,7 @@ export function MemberContext() {
         <div>
             {
                 ownedPortalKey === undefined
-                ? <p>loading...</p>
+                ? <p>potal access loading...</p>
                 : (
                     <>
                         {

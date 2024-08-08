@@ -6,7 +6,7 @@ import type { ReactNode } from "react"
 import React, { useContext, useEffect, useState } from "react"
 import { WalletClient } from "viem"
 import { optimism } from "viem/chains"
-import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { ConnectedWallet, usePrivy, useWallets } from "@privy-io/react-auth";
 import { createWalletClient, custom } from "viem";
 
 
@@ -31,11 +31,21 @@ export function useBiconomy () {
 export function BiconomyContext ({ children }: Props) {
     const [smartAccount, setSmartAccount] = useState<BiconomySmartAccountV2 | undefined>()
     const [smartAccountAddress, setSmartAccountAddress] = useState<string | undefined>()
+    const [embeddedWallet, setEmbeddedWallet] = useState<ConnectedWallet | undefined>()
+
     const {wallets} = useWallets();
-    const {ready, authenticated} = usePrivy();
+    const {user, ready, authenticated} = usePrivy();
 
-    let embeddedWallet = wallets.find((wallet) => (wallet.walletClientType === "privy"));
+    // make sure connected walltet == privy user before setting embed
+    useEffect(() => {
+        const connectedWallet = wallets[0]
+        const connectedUserWallet = user?.wallet
+        if (connectedWallet?.walletClientType === connectedUserWallet?.walletClientType) {
+            setEmbeddedWallet(connectedWallet)
+        }
+    }, [ wallets, user ]);
 
+    
     const getWalletClient = async () => {
         
         // Switch your wallet to your target chain before getting the viem WalletClient
@@ -52,7 +62,6 @@ export function BiconomyContext ({ children }: Props) {
         })
         return walletClient as WalletClient;
     }
-
     const createSmartAccount = async (walletClient: WalletClient) => {
         if (!walletClient) return;
 
@@ -67,11 +76,13 @@ export function BiconomyContext ({ children }: Props) {
         setSmartAccount(smartAccount);
     };
 
+
     const readyOrNot = async () => {
         //logout smart account        
         if (ready && !authenticated){
             setSmartAccountAddress(undefined);
             setSmartAccount(undefined);   
+            setEmbeddedWallet(undefined)
         }
         
         //not ready or not logged in
@@ -84,7 +95,8 @@ export function BiconomyContext ({ children }: Props) {
     }
     useEffect(() => {
         readyOrNot()
-    }, [wallets, ready, authenticated]);
+    }, [wallets, ready, authenticated, embeddedWallet]);
+
 
     return (
         <>

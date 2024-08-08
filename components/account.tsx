@@ -5,7 +5,8 @@ import { useWallets } from "@privy-io/react-auth";
 
 export function Account() {
     const { smartAccountAddress } = useBiconomy()
-    const {wallets} = useWallets();
+    const { wallets } = useWallets();
+    
 
     const wallet = wallets[0];
     console.log(wallet?.address)
@@ -13,8 +14,16 @@ export function Account() {
 
     return (
       <div className="">
-        <p>Your AA wallet is: {smartAccountAddress}</p>
-        <p>Your EOA wallet is: {wallet?.address}</p>
+        {
+          !smartAccountAddress 
+          ?<><p>account loading...</p></>
+          :(
+            <>
+              <p>Your AA wallet is: {smartAccountAddress}</p>
+              <p>Your EOA wallet is: {wallet?.address}</p>
+            </>
+          )
+        }
       </div>
     );
 }
