@@ -1,7 +1,7 @@
 "use client"
 
 import { useBiconomy } from "@/providers/BiconomyContext";
-import { PublicLockV13 } from "@unlock-protocol/contracts"
+import { PublicLockV14 } from "@unlock-protocol/contracts"
 import { Network, Alchemy, OwnedNft } from "alchemy-sdk";
 import { useEffect, useState } from "react";
 import { MemberNotFound } from "./notFound";
@@ -46,7 +46,7 @@ export function MemberContext() {
     console.log(ownedPortalKey)
 
     const {data: hasValidaKey, queryKey} = useReadContract({
-        abi: PublicLockV13.abi,
+        abi: PublicLockV14.abi,
         address: '0x7e0cc161Cd22876004010b1DA831c855e75EbeB4',
         functionName: 'getHasValidKey',
         args: [(smartAccountAddress)]

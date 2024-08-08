@@ -1,5 +1,5 @@
 import { useBiconomy } from "@/providers/BiconomyContext";
-import { PublicLockV13 } from "@unlock-protocol/contracts";
+import { PublicLockV14 } from "@unlock-protocol/contracts";
 import { useReadContract } from "wagmi";
 
 interface MemberProps {
@@ -7,11 +7,10 @@ interface MemberProps {
 }
 
 export function MemberActive({ tokenId }: MemberProps) {
-    const { smartAccountAddress } = useBiconomy()
 
 
     const keyExpiration = useReadContract({
-        abi: PublicLockV13.abi,
+        abi: PublicLockV14.abi,
         address: '0x7e0cc161Cd22876004010b1DA831c855e75EbeB4',
         functionName: 'keyExpirationTimestampFor',
         args: [(BigInt(tokenId!))]

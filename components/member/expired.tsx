@@ -13,11 +13,12 @@ interface MemberProps {
 export function MemberExpired({ tokenId }: MemberProps) {
     const { smartAccount } = useBiconomy()
     const [ loading, setLoading ] = useState<boolean>(false)
+    console.log(tokenId)
 
     const extendPortal = async() => {
         try {
             setLoading(true)
-            const tx = extend(Number(tokenId!))
+            const tx = extend((tokenId!))
 
             // Send the transaction and get the transaction hash
             const userOpResponse = await smartAccount!.sendTransaction(tx, {
