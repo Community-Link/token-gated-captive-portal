@@ -20,14 +20,12 @@ export function PrivyContext ({ children }: Props) {
                 appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID}
                 config={{
                     /* Replace this with your desired login methods */
-                    loginMethods: [ "sms", "wallet" ],
+                    loginMethods: [ "email" ],
                     /* Replace this with your desired appearance configuration */
                     appearance: {
                         theme: "light",
                         accentColor: "#0C3FFF",
                         logo: "",
-                        showWalletLoginFirst: true,
-                        walletList: ["metamask"]
                     },
                     embeddedWallets: {
                         createOnLogin: 'users-without-wallets', 
