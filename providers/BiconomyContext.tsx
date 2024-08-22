@@ -108,15 +108,10 @@ export function BiconomyContext ({ children }: Props) {
         readyOrNot()
     }, [wallets, ready, authenticated, embeddedWallet]);
 
-    const alreadyRegistered = {
-        username: [ 'A user with that username already exists.' ],
-        email: [ 'A user is already registered with this e-mail address.' ]
-    }
+
     const checkRegisterLogin = async() => {
-        const regRad = await registerRadius(smartAccountAddress!, getEmail()!)
-        if (JSON.stringify(regRad) === JSON.stringify(alreadyRegistered)) {
-            await loginRadius(smartAccountAddress!, "0x001234")
-        }
+        await registerRadius(smartAccountAddress!, getEmail()!)
+        await loginRadius(smartAccountAddress!, "0x001234")
     }
     useEffect(() => {
         // login or register radius
