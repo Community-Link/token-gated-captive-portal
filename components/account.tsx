@@ -5,7 +5,6 @@ import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { Button } from "./ui/button";
 import { loginRadius } from "@/app/actions/loginRadius";
 import { registerRadius } from "@/app/actions/registerRadius";
-import { postAurhFreeRadius } from "@/app/actions/postAurhFreeRadius";
 import { postAccountingFreeRadius } from "@/app/actions/postAccountingFreeRadius";
 
 
@@ -20,12 +19,6 @@ export function Account() {
     console.log(wallet?.address)
     console.log(smartAccountAddress)
 
-    const getEmail = () => {
-      if (linkedIndexAccount.type === "email") {
-        return user?.email?.address
-      }
-    }
-
     return (
       <div className="">
         {
@@ -38,18 +31,6 @@ export function Account() {
             </>
           )
         }
-        <Button onClick={async ()=>{
-           await loginRadius("string", "string1234")
-        }}>Log Rad</Button>
-        <Button onClick={async ()=>{
-           await registerRadius(smartAccountAddress!, getEmail()!)
-        }}>Reg Rad</Button>
-        <Button onClick={async ()=>{
-           await postAurhFreeRadius("0x001234", "string", "string", smartAccountAddress!, "Accept/")
-        }}>Auth Rad</Button>
-        <Button onClick={async ()=>{
-           await postAccountingFreeRadius("smartAccountAddress"!, "0x001234")
-        }}>Acc Rad</Button>
       </div>
     );
 }

@@ -8,6 +8,8 @@ import { WalletClient } from "viem"
 import { optimism } from "viem/chains"
 import { ConnectedWallet, usePrivy, useWallets } from "@privy-io/react-auth";
 import { createWalletClient, custom } from "viem";
+import { loginRadius } from "@/app/actions/loginRadius"
+import { registerRadius } from "@/app/actions/registerRadius"
 
 
 type Props = {
@@ -35,6 +37,7 @@ export function BiconomyContext ({ children }: Props) {
 
     const {wallets} = useWallets();
     const {user, ready, authenticated} = usePrivy();
+    const linkedIndexAccount = user?.linkedAccounts[0]!
 
     // make sure connected walltet == privy user before setting embed
     useEffect(() => {
@@ -76,6 +79,12 @@ export function BiconomyContext ({ children }: Props) {
         setSmartAccount(smartAccount);
     };
 
+    const getEmail = () => {
+        if (linkedIndexAccount.type === "email") {
+          return user?.email?.address
+        }
+    }
+
 
     const readyOrNot = async () => {
         //logout smart account        
@@ -92,10 +101,29 @@ export function BiconomyContext ({ children }: Props) {
         if (!embeddedWallet) return; 
         const walletClient = await getWalletClient()
         if (embeddedWallet && !smartAccount) createSmartAccount(walletClient);
+
+        
     }
     useEffect(() => {
         readyOrNot()
     }, [wallets, ready, authenticated, embeddedWallet]);
+
+    const alreadyRegistered = {
+        username: [ 'A user with that username already exists.' ],
+        email: [ 'A user is already registered with this e-mail address.' ]
+    }
+    const checkRegisterLogin = async() => {
+        const regRad = await registerRadius(smartAccountAddress!, getEmail()!)
+        if (JSON.stringify(regRad) === JSON.stringify(alreadyRegistered)) {
+            await loginRadius(smartAccountAddress!, "0x001234")
+        }
+    }
+    useEffect(() => {
+        // login or register radius
+        if (smartAccountAddress) {
+            checkRegisterLogin()
+        }
+    }, [ smartAccountAddress ]);
 
 
     return (

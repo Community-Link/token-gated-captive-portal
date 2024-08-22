@@ -4,19 +4,18 @@ import fetch from 'node-fetch';
 import https from "https";
 import { headers } from 'next/headers';
 
-export async function postAccountingFreeRadius (username: string, password: string) {
+export async function postAccountingFreeRadius (username: string) {
     try {
         const headersList = headers(); // Get the headers from the incoming request
         const csrfToken = headersList.get("X-CSRFToken")
         const agent = new https.Agent({
             rejectUnauthorized: false, // Allow self-signed certificates
         });
-        const response = await fetch("https://openwisp.sin.io/api/v1/freeradius/accounting/", {
+        const response = await fetch(`${process.env.BASE_URL}/api/v1/freeradius/accounting/`, {
             method: "POST",
             headers: {
-                "accept": "application/json",
-                "Content-Type": "application/json",
-                "X-CSRFToken": csrfToken!,
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Authorization": `Bearer ${process.env.UUID} ${process.env.TOKEN}`,
             },
             body: JSON.stringify({
                 unique_id: "string",

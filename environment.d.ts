@@ -6,6 +6,8 @@ declare global {
             NEXT_PUBLIC_PRIVY_APP_ID: string
             NEXT_PUBLIC_BICONOMY_BUNDLER_URL: string
             NEXT_PUBLIC_BICONOMY_PAYMASTER_API_KEY: string
+            UUID: string
+            TOKEN: string
             BASE_URL: string
         }
     }

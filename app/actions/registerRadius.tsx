@@ -14,7 +14,7 @@ export async function registerRadius (
         const agent = new https.Agent({
             rejectUnauthorized: false, // Allow self-signed certificates
         });
-        const response = await fetch("https://openwisp.sin.io/api/v1/radius/organization/default/account/", {
+        const response = await fetch(`${process.env.BASE_URL}/api/v1/radius/organization/default/account/`, {
             method: "POST",
             headers: {
                 "accept": "application/json",
@@ -34,6 +34,7 @@ export async function registerRadius (
         });
         const data =  await response.json()
         console.log(data)
+        return data
     } catch (error) {
         console.log(error)   
     }
