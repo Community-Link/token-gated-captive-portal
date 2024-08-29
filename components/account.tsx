@@ -2,8 +2,6 @@
 
 import { useBiconomy } from "@/providers/BiconomyContext";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
-import { Button } from "./ui/button";
-import { loginOpenWispFrame } from "@/app/actions/loginOpenWispFrame";
 
 
 export function Account() {
@@ -11,7 +9,6 @@ export function Account() {
     const { wallets } = useWallets();
     const { user } = usePrivy()
     console.log(user?.linkedAccounts)
-    const linkedIndexAccount = user?.linkedAccounts[0]!
 
     const wallet = wallets[0];
     console.log(wallet?.address)
@@ -29,13 +26,6 @@ export function Account() {
             </>
           )
         }
-        <Button onClick={()=>{
-          const storedToken = localStorage.getItem('radius_user_token');
-          console.log(storedToken)
-          loginOpenWispFrame(smartAccountAddress!, storedToken!)
-        }}>
-          Login Open Wisp
-        </Button>
       </div>
     );
 }

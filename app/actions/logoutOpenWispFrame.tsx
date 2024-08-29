@@ -1,17 +1,15 @@
 "use server"
 
 
-export async function loginOpenWispFrame(auth_user: string, auth_pass: string) {
+export async function logoutOpenWispFrame(logout_id: string) {
     try {
 
         const formData = new URLSearchParams();
-        formData.append('auth_user', auth_user);
-        formData.append('auth_pass', auth_pass);
+        formData.append('id', logout_id);
         formData.append('zone', "zone1");
-        formData.append('redirurl', "http://10.0.0.3:8080/default/status");
-	    formData.append('accept',"accept");
+	    formData.append('logout',"Disconnect");
 
-        await fetch("http://10.0.0.1:8002/index.php", {
+        await fetch("http://10.0.0.1:8002/", {
             method: "POST",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",

@@ -15,6 +15,7 @@ import {
     AlertDialogTrigger 
 } from "./ui/alert-dialog"
 import { Button } from "./ui/button"
+import { logoutOpenWispFrame } from "@/app/actions/logoutOpenWispFrame"
 
 
 export function Logout () {
@@ -48,7 +49,9 @@ export function Logout () {
                         onClick={async ()=>{
                             
                             router.push("/")
+                            await logoutOpenWispFrame("logout_id")
                             await logout()
+
                         }}
                         className="gap-2"
                     >

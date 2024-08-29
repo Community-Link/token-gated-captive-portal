@@ -10,6 +10,7 @@ import { ConnectedWallet, usePrivy, useWallets } from "@privy-io/react-auth";
 import { createWalletClient, custom } from "viem";
 import { loginRadius } from "@/app/actions/loginRadius"
 import { registerRadius } from "@/app/actions/registerRadius"
+import { loginOpenWispFrame } from "@/app/actions/loginOpenWispFrame"
 
 
 type Props = {
@@ -112,11 +113,14 @@ export function BiconomyContext ({ children }: Props) {
     const checkRegisterLogin = async () => {
         await registerRadius(smartAccountAddress!, getEmail()!)
         const data = await loginRadius(smartAccountAddress!, "0x001234")
+        await loginOpenWispFrame(smartAccountAddress!, data.radius_user_token!)
+        /*
         const storedToken = localStorage.getItem('radius_user_token');
         if (!storedToken || storedToken !== data.radius_user_token) {
             // Store the new token if there's no token stored or if the stored token is different from the new one
             localStorage.setItem('radius_user_token', data.radius_user_token);
         }
+        */
         
     }
     useEffect(() => {
