@@ -109,9 +109,15 @@ export function BiconomyContext ({ children }: Props) {
     }, [wallets, ready, authenticated, embeddedWallet]);
 
 
-    const checkRegisterLogin = async() => {
+    const checkRegisterLogin = async () => {
         await registerRadius(smartAccountAddress!, getEmail()!)
-        await loginRadius(smartAccountAddress!, "0x001234")
+        const data = await loginRadius(smartAccountAddress!, "0x001234")
+        const storedToken = localStorage.getItem('radius_user_token');
+        if (!storedToken || storedToken !== data.radius_user_token) {
+            // Store the new token if there's no token stored or if the stored token is different from the new one
+            localStorage.setItem('radius_user_token', data.radius_user_token);
+        }
+        
     }
     useEffect(() => {
         // login or register radius

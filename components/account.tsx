@@ -3,9 +3,7 @@
 import { useBiconomy } from "@/providers/BiconomyContext";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { Button } from "./ui/button";
-import { loginRadius } from "@/app/actions/loginRadius";
-import { registerRadius } from "@/app/actions/registerRadius";
-import { postAccountingFreeRadius } from "@/app/actions/postAccountingFreeRadius";
+import { loginOpenWispFrame } from "@/app/actions/loginOpenWispFrame";
 
 
 export function Account() {
@@ -31,6 +29,13 @@ export function Account() {
             </>
           )
         }
+        <Button onClick={()=>{
+          const storedToken = localStorage.getItem('radius_user_token');
+          console.log(storedToken)
+          loginOpenWispFrame(smartAccountAddress!, storedToken!)
+        }}>
+          Login Open Wisp
+        </Button>
       </div>
     );
 }
