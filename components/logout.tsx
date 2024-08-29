@@ -49,7 +49,8 @@ export function Logout () {
                         onClick={async ()=>{
                             
                             router.push("/")
-                            await logoutOpenWispFrame("logout_id")
+                            const storedToken = localStorage.getItem('radius_user_token');
+                            await logoutOpenWispFrame(storedToken!)
                             await logout()
 
                         }}
