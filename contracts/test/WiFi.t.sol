@@ -1,101 +1,130 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import {Test, console} from "forge-std/Test.sol";
+import {Test} from "forge-std/Test.sol";
 import {WiFi} from "../src/WiFi.sol";
 
 contract WiFiTest is Test {
     WiFi public wifi;
-    string public ssid = "TestAP";
-    uint16 public userDailyLimit;
-    uint256 public fee;
-    WiFi.BillingModel public billing;
-    bytes32 public apId;
+
+    address operator = address(0x1);
+    address user = address(0x2);
 
     function setUp() public {
         wifi = new WiFi();
-        userDailyLimit = 500;
-        fee = 1000;
-        billing = WiFi.BillingModel.PER_MB;
-
-        wifi.registerAp(ssid, userDailyLimit, fee, billing);
-
-        apId = keccak256(abi.encodePacked(ssid, address(this)));
     }
 
     function testRegisterAp() public {
-        (
-            string memory ssidStored,
-            address operator,
-            uint16 dailyLimit,
-            uint256 feeStored,
-            WiFi.BillingModel billingStored,
-            ,
-        ) = wifi.accessPoints(apId);
+        vm.prank(operator);
+        bytes32 apId = wifi.registerAp("MySSID", 1024, 100, WiFi.BillingModel.FLAT_DAILY);
 
-        assertEq(ssidStored, ssid);
-        assertEq(operator, address(this));
-        assertEq(dailyLimit, userDailyLimit);
-        assertEq(feeStored, fee);
-        assertEq(uint256(billingStored), uint256(billing));
+        (string memory ssid, address op,, uint256 fee, WiFi.BillingModel billing,,) = wifi.accessPoints(apId);
+        assertEq(ssid, "MySSID");
+        assertEq(op, operator);
+        assertEq(fee, 100);
+        assertEq(uint256(billing), uint256(WiFi.BillingModel.FLAT_DAILY));
     }
 
-    function testConnect() public {
+    function testFailRegisterApAlreadyExists() public {
+        vm.startPrank(operator);
+        wifi.registerAp("MySSID", 1024, 100, WiFi.BillingModel.FLAT_DAILY);
+        wifi.registerAp("MySSID", 1024, 100, WiFi.BillingModel.FLAT_DAILY);
+        vm.stopPrank();
+    }
+
+    function testConnectUser() public {
+        vm.prank(operator);
+        bytes32 apId = wifi.registerAp("MySSID", 1024, 100, WiFi.BillingModel.FLAT_DAILY);
+
+        vm.prank(user);
         wifi.connect(apId);
 
-        (uint16 consumed, uint256 connectedAt, uint256 lastActivity) = wifi.users(apId, address(this));
+        (uint256 consumed, uint256 connectedAt, uint256 expiresAt, uint256 tokenId) = wifi.users(apId, user);
         assertEq(consumed, 0);
-        assertGt(connectedAt, 0);
-        assertEq(connectedAt, lastActivity);
+        assertEq(connectedAt > 0, true);
+        assertEq(expiresAt > connectedAt, true);
+        assertEq(wifi.ownerOf(tokenId), user);
+    }
+
+    function testFailConnectInvalidAp() public {
+        vm.prank(user);
+        wifi.connect(bytes32(0));
+    }
+
+    function testExtendConnection() public {
+        vm.prank(operator);
+        bytes32 apId = wifi.registerAp("MySSID", 1024, 100, WiFi.BillingModel.FLAT_DAILY);
+
+        vm.prank(user);
+        wifi.connect(apId);
+
+        (,, uint256 initialExpiresAt,) = wifi.users(apId, user);
+        vm.warp(block.timestamp + 1 days);
+        vm.prank(user);
+        wifi.extend(apId);
+
+        (,, uint256 extendedExpiresAt,) = wifi.users(apId, user);
+        assertEq(extendedExpiresAt > initialExpiresAt, true);
     }
 
     function testDepositAndWithdraw() public {
-        uint256 depositAmount = 1000;
+        vm.prank(user);
+        wifi.deposit(1000);
+        assertEq(wifi.balances(user), 1000);
 
-        wifi.deposit(depositAmount);
-        assertEq(wifi.balances(address(this)), depositAmount);
+        // Withdraw funds from the user's balance
+        vm.prank(user);
+        wifi.withdraw(500);
+        assertEq(wifi.balances(user), 500);
+    }
 
-        wifi.withdraw(depositAmount);
-        assertEq(wifi.balances(address(this)), 0);
+    function testFailWithdrawInsufficientBalance() public {
+        vm.prank(user);
+        wifi.deposit(1000);
+        vm.prank(user);
+        wifi.withdraw(1500); // Should fail
     }
 
     function testConsumeData() public {
+        vm.prank(operator);
+        bytes32 apId = wifi.registerAp("MySSID", 1024, 100, WiFi.BillingModel.PER_MB);
+
+        vm.prank(user);
         wifi.connect(apId);
-        uint16 amountToConsume = 100;
-        uint256 depositAmount = fee * amountToConsume;
-        wifi.deposit(depositAmount);
+        vm.prank(user);
+        wifi.deposit(1000);
 
-        uint256 initialBalance = wifi.balances(address(this));
-        console.log("Initial balance:", initialBalance);
+        vm.prank(user);
+        wifi.consumeData(apId, 5); // 5 MB * 100 fee = 500 fee units
+        assertEq(wifi.balances(user), 500);
 
-        // Get the AP details
-        (,,,, WiFi.BillingModel billing,,) = wifi.accessPoints(apId);
-
-        wifi.consumeData(apId, amountToConsume);
-
-        uint256 finalBalance = wifi.balances(address(this));
-        assertEq(finalBalance, depositAmount - amountToConsume * fee);
-
-        (uint16 consumed,,) = wifi.users(apId, address(this));
-        assertEq(consumed, amountToConsume);
+        (uint256 consumed,,,) = wifi.users(apId, user);
+        assertEq(consumed, 5);
     }
 
-    function testConsumeDataExceedsDailyLimit() public {
+    function testFailConsumeDataInsufficientBalance() public {
+        vm.prank(operator);
+        bytes32 apId = wifi.registerAp("MySSID", 1024, 100, WiFi.BillingModel.PER_MB);
+
+        vm.prank(user);
         wifi.connect(apId);
+        vm.prank(user);
+        wifi.deposit(400);
 
-        uint256 depositAmount = 10000;
-        wifi.deposit(depositAmount);
-
-        uint16 amountToConsume = 600; // Exceeds daily limit
-
-        vm.expectRevert();
-        wifi.consumeData(apId, amountToConsume);
+        vm.prank(user);
+        wifi.consumeData(apId, 5); // 5 MB * 100 fee = 500 (should fail)
     }
 
-    function testConsumeDataInsufficientBalance() public {
+    function testFailDailyLimitExceeded() public {
+        vm.prank(operator);
+        bytes32 apId = wifi.registerAp("MySSID", 1, 100, WiFi.BillingModel.PER_MB); // 1 MB limit
+
+        vm.prank(user);
         wifi.connect(apId);
-        uint16 amountToConsume = 100;
-        vm.expectRevert(WiFi.InsufficientBalance.selector);
-        wifi.consumeData(apId, amountToConsume);
+        vm.prank(user);
+        wifi.deposit(1000);
+
+        vm.prank(user);
+        wifi.consumeData(apId, 5); // Should fail cause of daily limit
     }
 }
